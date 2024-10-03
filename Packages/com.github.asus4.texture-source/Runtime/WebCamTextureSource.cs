@@ -37,7 +37,10 @@ namespace TextureSource
         [SerializeField]
         private int frameRate = 60;
 
-        public override bool DidUpdateThisFrame
+		[SerializeField]
+		private int orientation = 0;
+
+		public override bool DidUpdateThisFrame
         {
             get
             {
@@ -147,7 +150,7 @@ namespace TextureSource
                 return transformer.Texture;
             }
 
-            bool isPortrait = webCamTexture.videoRotationAngle == 90 || webCamTexture.videoRotationAngle == 270;
+            bool isPortrait = orientation == 90 || orientation == 270;
             int width = webCamTexture.width;
             int height = webCamTexture.height;
             if (isPortrait)

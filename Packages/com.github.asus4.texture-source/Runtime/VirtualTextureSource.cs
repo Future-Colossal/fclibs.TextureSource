@@ -26,7 +26,19 @@ namespace TextureSource
         [Tooltip("If true, the texture is trimmed to the screen aspect ratio. Use this to show in full screen")]
         private bool trimToScreenAspect = false;
 
-        [Tooltip("Event called when texture updated")]
+		[SerializeField]
+		[Tooltip("If true, the texture is adapted to the screen aspect ratio. Use this to show in full screen")]
+		private bool adaptToScreenAspect = false;
+
+		[SerializeField]
+		[Tooltip("Degrees of rotation applied to the texture before getting sent through")]
+		private float textureOrientation = 0f;
+
+		[SerializeField]
+		[Tooltip("Panning value applied to the texture before getting sent through")]
+		private Vector2 texturePanning = Vector2.zero;
+
+		[Tooltip("Event called when texture updated")]
         public TextureEvent OnTexture = new TextureEvent();
 
         [Tooltip("Event called when the aspect ratio changed")]
@@ -38,8 +50,9 @@ namespace TextureSource
 
         public bool DidUpdateThisFrame => activeSource.DidUpdateThisFrame;
         public Texture Texture => activeSource.Texture;
+        Texture tex;
 
-        public BaseTextureSource Source
+		public BaseTextureSource Source
         {
             get => source;
             set => source = value;
@@ -79,9 +92,19 @@ namespace TextureSource
                 return;
             }
 
-            Texture tex = trimToScreenAspect
-                ? TrimToScreen(Texture)
-                : Texture;
+            if( trimToScreenAspect )
+            {
+                tex = TrimToScreen(Texture);
+            }
+            else if( adaptToScreenAspect )
+            {
+                tex = AdaptToScreen(Texture);
+            }
+            else
+            {
+                tex = Texture;
+            }
+
             OnTexture?.Invoke(tex);
 
             float aspect = (float)tex.width / tex.height;
@@ -125,7 +148,29 @@ namespace TextureSource
                 transformer = new TextureTransformer(dstSize.x, dstSize.y, format);
             }
 
-            return transformer.Transform(texture, Vector2.zero, 0, scale);
+            return transformer.Transform(texture, texturePanning, textureOrientation, scale);
         }
-    }
+
+		private Texture AdaptToScreen(Texture texture)
+		{
+			float srcAspect = (float)texture.width / texture.height;
+
+			Utils.GetTargetSizeScale(
+				new Vector2Int(texture.width, texture.height), srcAspect,
+				out Vector2Int dstSize, out Vector2 scale);
+
+			bool needInitialize = transformer == null || dstSize.x != transformer.width || dstSize.y != transformer.height;
+			if( needInitialize )
+			{
+				transformer?.Dispose();
+				// Copy the format if the source is a RenderTexture
+				RenderTextureFormat format = (texture is RenderTexture renderTex)
+					? renderTex.format :
+					RenderTextureFormat.ARGB32;
+				transformer = new TextureTransformer(dstSize.x, dstSize.y, format);
+			}
+
+			return transformer.Transform(texture, texturePanning, textureOrientation, scale);
+		}
+	}
 }
