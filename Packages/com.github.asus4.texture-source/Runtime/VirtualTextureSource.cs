@@ -38,6 +38,10 @@ namespace TextureSource
 		[Tooltip("Panning value applied to the texture before getting sent through")]
 		private Vector2 texturePanning = Vector2.zero;
 
+		[SerializeField]
+		[Tooltip("Scale multiplier for the texture size (should match the provider scaleFactor)")]
+		private float scaleFactor = 1;
+
 		[Tooltip("Event called when texture updated")]
         public TextureEvent OnTexture = new TextureEvent();
 
@@ -148,7 +152,7 @@ namespace TextureSource
                 transformer = new TextureTransformer(dstSize.x, dstSize.y, format);
             }
 
-            return transformer.Transform(texture, texturePanning, textureOrientation, scale);
+            return transformer.Transform(texture, texturePanning, textureOrientation, scale * scaleFactor);
         }
 
 		private Texture AdaptToScreen(Texture texture)
@@ -170,7 +174,7 @@ namespace TextureSource
 				transformer = new TextureTransformer(dstSize.x, dstSize.y, format);
 			}
 
-			return transformer.Transform(texture, texturePanning, textureOrientation, scale);
+			return transformer.Transform(texture, texturePanning, textureOrientation, scale * scaleFactor);
 		}
 	}
 }

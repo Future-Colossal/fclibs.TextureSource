@@ -40,6 +40,9 @@ namespace TextureSource
 		[SerializeField]
 		private int orientation = 0;
 
+		[SerializeField]
+		private int scaleFactor = 1;
+
 		public override bool DidUpdateThisFrame
         {
             get
@@ -162,7 +165,7 @@ namespace TextureSource
             if (needInitialize)
             {
                 transformer?.Dispose();
-                transformer = new TextureTransformer(width, height, RenderTextureFormat.ARGB32);
+                transformer = new TextureTransformer(width * scaleFactor, height * scaleFactor, RenderTextureFormat.ARGB32);
             }
 
             Vector2 scale;
